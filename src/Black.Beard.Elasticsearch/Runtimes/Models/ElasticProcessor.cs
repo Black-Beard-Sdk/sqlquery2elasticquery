@@ -10,41 +10,48 @@ using System.Reflection;
 
 namespace Bb.Elastic.Runtimes.Models
 {
-    public class ConnectionElastic : Connection
+
+    public class ElasticProcessor : ElasticAbstractProcessor
     {
 
-
-        public ConnectionElastic(string name, ElasticLowLevelClient client) : base(name)
+        internal ElasticProcessor(string name, ElasticLowLevelClient client) : base(name)
         {
             this._client = client;
 
 
-            this.callMethod = typeof(ConnectionElastic).GetMethod("Call", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            this.callMethod = typeof(ElasticProcessor).GetMethod("Call", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
         }
-
 
         public override Result ExecuteQuery<TResponse>(ContextExecutor ctx, object query)
         {
 
-            var ecall = query as ECall;
-            var q = ecall.GetQuery();
-            Func<string, string, TResponse> tunedMethod = GettunedMethod<TResponse>();
+            string queryString = string.Empty;
 
-            var response = tunedMethod(ecall.Index, q.ToString());
-
-            return new Result<TResponse>()
+            if (query is ECall ecall)
             {
-                Request = new RequestQuery()
+                var q = ecall.GetQuery();
+                queryString = q.ToString();
+
+                Func<string, string, TResponse> tunedMethod = GettunedMethod<TResponse>();
+                var response = tunedMethod(ecall.Index, queryString);
+
+                return new Result<TResponse>()
                 {
-                    Query = q,
-                    Connection = this,
-                    Table = ecall.Index,
+                    Request = new RequestQuery()
+                    {
+                        Query = q,
+                        Connection = this,
+                        Table = ecall.Index,
 
-                },
+                    },
 
-                Datas = response
-            };
+                    Datas = response
+                };
+
+            }
+
+            return null;
 
         }
 

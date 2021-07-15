@@ -1,0 +1,3 @@
+srv1
+select * from srv1.squid WHERE server = '40.68.176.16'
+squid->{"from":0,"query":{"bool":{"filter":[{"term":{"server":"40.68.176.16"}}]}},"size":10}

@@ -30,12 +30,14 @@ namespace Bb.Elastic.Parser
 
         public override AstBase VisitSql_stmt_list([NotNull] ElasticParser.Sql_stmt_listContext context)
         {
+
             AstList<AstBase> result = new AstList<AstBase>(GetLocator(context));
             var stmts = context.sql_stmt();
 
             foreach (var item in stmts)
             {
-                result.Add(item.Accept(this));
+                var a = item.Accept(this);
+                result.Add(a);
             }
 
             return result;
@@ -48,8 +50,7 @@ namespace Bb.Elastic.Parser
 
         /// <summary>
         /// select_stmt:
-        ///    common_table_stmt? 
-        ///    select_core
+        ///    common_table_stmt? select_core
         ///    compound*
         ///    order_by_stmt? 
         ///    limit_stmt?;
@@ -86,9 +87,11 @@ namespace Bb.Elastic.Parser
             var limit = context.limit_stmts();
             if (limit != null)
                 SelectResult.Limit = (SpecificationLimit)limit.Accept(this);
+            
             else
             {
-                SelectResult.Limit = new SpecificationLimit(GetLocator(limit))
+                var locator = GetLocator(context);
+                SelectResult.Limit = new SpecificationLimit(locator)
                 {
                     Offset = new Literal(null) { Value = 0 },
                     RowCount = new Literal(null) { Value = 10 },
@@ -171,7 +174,7 @@ namespace Bb.Elastic.Parser
         }
 
         /// <summary>
-        /// subquery_table: (table_or_subquery (',' table_or_subquery)* | join_clause);
+        /// subquery_table: (table_or_subquery (',' table_or_subquery)* | join_clauses)
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
@@ -188,7 +191,7 @@ namespace Bb.Elastic.Parser
                     if (source is SpecificationSource s)
                         sources.Add(s);
 
-                    if (source is AliasAstBase a)
+                    else if (source is AliasAstBase a)
                         sources.Add(new SpecificationSourceAlias(GetLocator(sub)) { Alias = a });
 
                     else

@@ -9,7 +9,7 @@ namespace Bb.Elastic.Runtimes.Visitors
     public class EVisitor : IVisitor<object>
     {
 
-        public EVisitor(ElasticConnections connections)
+        public EVisitor(ElasticConnectionList connections)
         {
             this._connections = connections;
         }
@@ -40,11 +40,11 @@ namespace Bb.Elastic.Runtimes.Visitors
         public object VisitList(AstBase n)
         {
 
-            List<object> result = new List<object>();
+            List<ECall> result = new List<ECall>();
             var n1 = (IEnumerable<AstBase>)n;
 
             foreach (AstBase item in n1)
-                result.Add(item.Accept(this));
+                result.Add((ECall)item.Accept(this));
 
             return result;
         }
@@ -514,7 +514,7 @@ namespace Bb.Elastic.Runtimes.Visitors
         }
 
 
-        private readonly ElasticConnections _connections;
+        private readonly ElasticConnectionList _connections;
 
 
     }

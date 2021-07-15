@@ -8,14 +8,14 @@ namespace Bb.Elastic.Runtimes.Visitors
     internal class MetaVisitor
     {
 
-        public MetaVisitor(ElasticConnections connections)
+        public MetaVisitor(ElasticConnectionList connections)
         {
 
-            this._visitors = new List<Func<ElasticConnections, ContextExecutor, IVisitor>>();
+            this._visitors = new List<Func<ElasticConnectionList, ContextExecutor, IVisitor>>();
             this._connections = connections;
         }
 
-        public MetaVisitor Append(Func<ElasticConnections, ContextExecutor, IVisitor> visitor)
+        public MetaVisitor Append(Func<ElasticConnectionList, ContextExecutor, IVisitor> visitor)
         {
             this._visitors.Add(visitor);
             return this;
@@ -24,17 +24,23 @@ namespace Bb.Elastic.Runtimes.Visitors
         public object Visit(AstBase n, ContextExecutor ctx)
         {
 
+            object lastResult = null;
+
             foreach (var item in this._visitors)
             {
                 var v = item(this._connections, ctx);
-                v.Visit(n);
+                lastResult = v.Visit(n);
             }
-            return n;
+
+            return lastResult;
 
         }
 
-        private readonly List<Func<ElasticConnections, ContextExecutor, IVisitor>> _visitors;
-        private readonly ElasticConnections _connections;
+        internal ElasticConnectionList Connections => _connections; 
+
+        private readonly List<Func<ElasticConnectionList, ContextExecutor, IVisitor>> _visitors;
+        private readonly ElasticConnectionList _connections;
+
     }
 
 }

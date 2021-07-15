@@ -6,9 +6,16 @@ namespace Bb.Elastic.Runtimes.Models
     public class ECall
     {
 
-        public ESpecification Query { get; set; }
+        public ECall()
+        {
+
+        }
+
+        public ESerialize Query { get; set; }
+
         public string Index { get; set; }
-        public Connection Connection { get; set; }
+        
+        public ElasticAbstractProcessor Connection { get; set; }
 
 
         public Result<TResponse> ExecuteQuery<TResponse>(ContextExecutor ctx)
@@ -19,9 +26,7 @@ namespace Bb.Elastic.Runtimes.Models
 
         internal JToken GetQuery()
         {
-
             return Query.Serialize();
-
         }
 
         public override string ToString()
