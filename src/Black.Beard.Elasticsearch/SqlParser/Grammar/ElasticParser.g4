@@ -120,7 +120,7 @@ create_view_stmt:
 	)? view_name column_name_list? AS select_stmt;
 
 create_virtual_table_stmt:
-	CREATE VIRTUAL TABLE (IF NOT EXISTS)? (schema_name '.')? table_name USING module_name (
+	CREATE VIRTUAL TABLE (IF NOT EXISTS)? full_table_name USING module_name (
 		'(' module_argument (',' module_argument)* ')'
 	)?;
 
@@ -169,8 +169,8 @@ in_expr:
 	NOT? IN 
 	(
 		  ( '(' (select_stmt | expr_list)? ')' )
-		| ( ( schema_name '.')? table_name )
-		| ( (schema_name '.')? table_function_name '(' expr_list? ')' )
+		| full_table_name
+		| ( full_function_name '(' expr_list? ')' )
 	)
 	;
 
@@ -196,10 +196,6 @@ exists_expr:
 
 nullable_expr: 
 	( ISNULL | NOTNULL | (NOT NULL_))
-	;
-
-fullname: 
-	( ( schema_name '.')? table_name '.')? column_name
 	;
 
 binary_operator:
@@ -257,7 +253,7 @@ insert_stmt:
 				| IGNORE
 			)
 		)
-	) INTO (schema_name '.')? table_name (AS table_alias)? column_name_list? (
+	) INTO full_table_name (AS table_alias)? column_name_list? (
 		(
 			(
 				VALUES value_list_stmt
@@ -334,11 +330,11 @@ expr_list: expr (',' expr)*;
 
 table_or_subquery: 
       (
-		(schema_name '.')? table_name (AS? table_alias)? 
+		full_table_name (AS? table_alias)? 
 		((INDEXED BY index_name) | (NOT INDEXED))?
 	  )
 	| (
-		(schema_name '.')? table_function_name '(' expr (',' expr)* ')' (AS? table_alias)?
+		full_function_name '(' expr (',' expr)* ')' (AS? table_alias)?
 	  )
 	| '(' subquery_table ')'
 	| ('(' select_stmt ')' ( AS? table_alias)?);
@@ -629,12 +625,18 @@ keyword:
 
 name: any_name;
 
+full_function_name : (schema_name '.')? table_function_name;
+
 function_name: any_name;
 
 schema_name: any_name;
 
 table_name: any_name;
 
+full_table_name: (schema_name '.')? table_name;
+
+fullname: ( full_table_name '.')? column_name;
+	
 column_name: any_name;
 
 collation_name: any_name;
