@@ -3,6 +3,7 @@
 namespace Bb.Elastic.SqlParser.Models
 {
 
+    [System.Diagnostics.DebuggerDisplay("{Left} {Operator} {Right}")]
     public class BinaryExpression : AstBase
     {
 

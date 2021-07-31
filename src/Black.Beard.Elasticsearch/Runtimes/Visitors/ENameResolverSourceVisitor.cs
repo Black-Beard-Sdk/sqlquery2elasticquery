@@ -116,7 +116,8 @@ namespace Bb.Elastic.Runtimes.Visitors
 
         Identifier IVisitor<Identifier>.VisitSelectSpecificationSource(SpecificationSourceSelect n)
         {
-            return n.ShortName ?? n.Select.Accept(this);
+            Stop();
+            return n.Select.Accept(this);
         }
 
         Identifier IVisitor<Identifier>.VisitSorting(SpecificationSorting n)
@@ -142,7 +143,7 @@ namespace Bb.Elastic.Runtimes.Visitors
 
         Identifier IVisitor<Identifier>.VisitSpecificationFilter(SpecificationFilter n)
         {
-            return n.Filter.Accept(this);
+            return n.Rule.Accept(this);
         }
 
         Identifier IVisitor<Identifier>.VisitSpecificationLimit(SpecificationLimit n)

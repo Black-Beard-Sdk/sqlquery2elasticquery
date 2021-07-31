@@ -42,6 +42,9 @@ namespace Bb.Elastic.Runtimes.Visitors
                     switch (item.Kind)
                     {
 
+                        case IdentifierKindEnum.SchemaReference:
+                            break;
+
                         case IdentifierKindEnum.ServerReference:
                             r = new Reference() { Name = item.Text, Value = item, Kind = ReferenceKindEnum.Server };
                             _ctx.AddReference(r);
@@ -52,6 +55,7 @@ namespace Bb.Elastic.Runtimes.Visitors
                                 ServerReference = r,
                                 ServerConnection = cnx,
                             };
+                            cnx.
                             break;
 
                         case IdentifierKindEnum.TableReference:
@@ -62,8 +66,17 @@ namespace Bb.Elastic.Runtimes.Visitors
                                 var alias = t[0].Value as Identifier;
                                 if (alias.Reference != null)
                                 {
-                                    // table = (ServerTableStructure)alias.Reference;
+                                    Stop();
+                                    //table = (ServerTableStructure)alias.Reference;
                                 }
+                            }
+                            else
+                            {
+                                item.Reference = new ElasticTableReference(n.Position)
+                                {
+                                    TableReference = (ServerTableStructure) _ctx,
+                                };
+
                             }
 
                             if (table != null)
@@ -109,45 +122,18 @@ namespace Bb.Elastic.Runtimes.Visitors
                             break;
 
                         case IdentifierKindEnum.FunctionReference:
+                            Stop();
                             break;
 
                         case IdentifierKindEnum.Undefined:
                         default:
+                            Stop();
                             break;
                     }
 
                     item = item.TargetRight;
 
                 }
-
-
-
-                //var server = n.GetServerName;
-                //var table = n.GetTableName;
-                //var column = n.GetColumnName;
-                //var function = n.GetfunctionName;
-                //AstBase p = null;
-                //Reference parent = null;
-                //if (server != null)
-                //{
-                //    _ctx.AddReference(parent = new Reference() { Name = server.Text, Kind = ReferenceKindEnum.Server, Value = server });
-                //}
-
-                //if (table != null)
-                //{
-                //    var r = _ctx.Get(table.Text);
-                //    if (r.Count == 1)
-                //        _ctx.AddReference(parent = new Reference() { Name = table.Text, Kind = r[0].Kind, Value = table, Parent = parent });
-                //    else
-                //        _ctx.AddReference(parent = new Reference() { Name = table.Text, Kind = ReferenceKindEnum.Table, Value = table, Parent = parent });
-
-                //}
-
-                //if (column != null)
-                //    _ctx.AddReference(parent = new Reference() { Name = column.Text, Kind = ReferenceKindEnum.Column, Value = column, Parent = parent });
-
-                //if (function != null)
-                //    _ctx.AddReference(parent = new Reference() { Name = function.Text, Kind = ReferenceKindEnum.Function, Value = function, Parent = parent });
 
             }
 
@@ -158,8 +144,8 @@ namespace Bb.Elastic.Runtimes.Visitors
         public object VisitAlias(AliasReferenceAst n)
         {
 
-            n.Value.Accept(this);
-            Identifier name = ENameResolverSourceVisitor.GetName(n.Value);
+            n.Reference.Accept(this);
+            Identifier name = ENameResolverSourceVisitor.GetName(n.Reference);
             var n2 = name.TargetLast;
             n.Reference = n2;
 
@@ -302,7 +288,7 @@ namespace Bb.Elastic.Runtimes.Visitors
 
         public object VisitSpecificationFilter(SpecificationFilter n)
         {
-            n.Filter.Accept(this);
+            n.Rule.Accept(this);
             return n;
         }
 

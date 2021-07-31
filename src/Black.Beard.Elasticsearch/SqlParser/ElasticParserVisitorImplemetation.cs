@@ -60,11 +60,11 @@ namespace Bb.Elastic.Parser
         public override AstBase VisitSelect_stmt([NotNull] ElasticParser.Select_stmtContext context)
         {
 
-            var table = context.common_table_stmt();
-            if (table != null)
+            var tableStmet = context.common_table_stmt();
+            if (tableStmet != null)
             {
                 Stop();
-                table.Accept(this);
+                tableStmet.Accept(this);
             }
 
             var select = context.select_core();
@@ -136,7 +136,6 @@ namespace Bb.Elastic.Parser
                 var c = context.value_list_stmt();
             }
 
-
             if (window)
             {
                 Stop();
@@ -147,7 +146,6 @@ namespace Bb.Elastic.Parser
                 }
 
             }
-
 
             var groupBy = context.group_by_stmt();
             if (groupBy != null)
@@ -254,7 +252,7 @@ namespace Bb.Elastic.Parser
                     {
                         var alias = new AliasReferenceAst(GetLocator(_alias))
                         {
-                            Value = r,
+                            Reference = r,
                             AliasName = (Identifier)_alias.Accept(this),
                         };
                         return alias;
@@ -446,8 +444,8 @@ namespace Bb.Elastic.Parser
         ///     NOT? IN
         ///     (
         ///           ('(' (select_stmt | expr_list)? ')')
-        ///     	| ((schema_name '.')? table_name)
-        ///     	| ((schema_name '.')? table_function_name '(' expr_list? ')')
+        ///     	| full_table_name
+        ///     	| (full_function_name '(' expr_list? ')')
         ///     )
         /// </summary>
         /// <param name="context"></param>
@@ -781,7 +779,6 @@ namespace Bb.Elastic.Parser
             return context.any_name().Accept(this);
         }
 
-
         public override AstBase VisitFull_table_name([NotNull] ElasticParser.Full_table_nameContext context)
         {
 
@@ -842,7 +839,6 @@ namespace Bb.Elastic.Parser
         public override AstBase VisitTable_or_subquery([NotNull] ElasticParser.Table_or_subqueryContext context)
         {
 
-            Identifier schema = null;
             AstBase source = null;
 
             var alias = context.table_alias();
@@ -852,11 +848,8 @@ namespace Bb.Elastic.Parser
             {
 
                 var tableName = (Identifier)t.Accept(this);
-                if (schema != null)
-                {
-                    schema.TargetRight = tableName;
-                    tableName = schema;
-                }
+                tableName.Kind = IdentifierKindEnum.ServerReference;
+
                 Identifier index = null;
                 if (context.INDEXED() != null)
                     index = (Identifier)context.index_name().Accept(this);
@@ -871,7 +864,7 @@ namespace Bb.Elastic.Parser
                     source = new AliasReferenceAst(GetLocator(alias))
                     {
                         AliasName = (Identifier)alias.Accept(this),
-                        Value = source,
+                        Reference = source,
                     };
 
                 return source;
@@ -885,11 +878,6 @@ namespace Bb.Elastic.Parser
                 Stop();
 
                 var functionName = (Identifier)t.Accept(this);
-                if (schema != null)
-                {
-                    schema.TargetRight = functionName;
-                    functionName = schema;
-                }
                 var e = context.expr();
                 AstList<AstBase> _args = new AstList<AstBase>(GetLocator(context));
                 if (e != null)
@@ -910,7 +898,7 @@ namespace Bb.Elastic.Parser
                     source = new AliasReferenceAst(GetLocator(alias))
                     {
                         AliasName = (Identifier)alias.Accept(this),
-                        Value = source,
+                        Reference = source,
                     };
 
                 return source;
@@ -923,20 +911,20 @@ namespace Bb.Elastic.Parser
 
             Stop();
 
-            AliasReferenceAst _alias = null;
-            if (alias != null)
-                _alias = new AliasReferenceAst(GetLocator(alias))
-                {
-                    AliasName = (Identifier)alias.Accept(this),
-                };
-
             source = new SpecificationSourceSelect(GetLocator(context.select_stmt()))
             {
                 Select = (Specification)context.select_stmt().Accept(this),
-                ShortName = _alias
             };
 
-
+            if (alias != null)
+            {
+                var _alias = (Identifier)alias.Accept(this);
+                source = new AliasReferenceAst(GetLocator(alias))
+                {
+                    AliasName = _alias,
+                    Reference = source,
+                };
+            }
 
             return source;
 
@@ -1169,7 +1157,7 @@ namespace Bb.Elastic.Parser
             return new AliasReferenceAst(GetLocator(context))
             {
                 AliasName = (Identifier)i.Accept(this),
-                Value = k.Accept(this),
+                Reference = k.Accept(this),
             };
 
         }
@@ -1365,7 +1353,7 @@ namespace Bb.Elastic.Parser
         {
             var s = new SpecificationFilter(GetLocator(context))
             {
-                Filter = context.expr().Accept(this),
+                Rule = context.expr().Accept(this),
             };
             return s;
         }
@@ -1746,26 +1734,6 @@ namespace Bb.Elastic.Parser
 
         private readonly ContextExecutor _ctx;
         private readonly CultureInfo _currentCulture;
-
-
-        //protected override object AggregateResult(object aggregate, object nextResult)
-        //{
-        //    Stop();
-        //    return base.AggregateResult(aggregate, nextResult);
-        //}
-
-        //protected override bool ShouldVisitNextChild(IRuleNode node, object currentResult)
-        //{
-        //    Stop();
-        //    return base.ShouldVisitNextChild(node, currentResult);
-        //}
-
-        //public override AstBase VisitChildren(IRuleNode node)
-        //{
-        //    Stop();
-        //    return base.VisitChildren(node);
-        //}
-
 
     }
 }

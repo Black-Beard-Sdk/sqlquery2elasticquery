@@ -53,8 +53,8 @@ namespace Bb.Elastic.Runtimes.Visitors
 
         public object VisitAlias(AliasReferenceAst n)
         {
-
-            var v = n.Value.Accept(this);
+            Stop();
+            var v = n.Reference.Accept(this);
             // var name = n.AliasName.Accept(this);
 
             if (v is Action<ECall> a)
@@ -249,7 +249,7 @@ namespace Bb.Elastic.Runtimes.Visitors
             //if (n.Origin != null)
             //    n.Origin.Accept(this);
 
-            var filter = n.Filter.Accept(this);
+            var filter = n.Rule.Accept(this);
             if (filter is Action<EBool> a)
             {
 

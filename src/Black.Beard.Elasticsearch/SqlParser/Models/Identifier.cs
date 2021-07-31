@@ -55,8 +55,11 @@ namespace Bb.Elastic.SqlParser.Models
         }
 
         public Identifier GetServerName { get => this.GetName(IdentifierKindEnum.ServerReference); }
+
         public Identifier GetTableName { get => this.GetName(IdentifierKindEnum.TableReference); }
+
         public Identifier GetColumnName { get => this.GetName(IdentifierKindEnum.ColumnReference); }
+
         public Identifier GetfunctionName { get => this.GetName(IdentifierKindEnum.FunctionReference); }
 
 

@@ -3,7 +3,7 @@
 namespace Bb.Elastic.SqlParser.Models
 {
 
-    [System.Diagnostics.DebuggerDisplay("{Value} AS {AliasName}")]
+    [System.Diagnostics.DebuggerDisplay("{Reference} AS {AliasName}")]
     public class AliasReferenceAst : Identifier
     {
 
@@ -11,8 +11,6 @@ namespace Bb.Elastic.SqlParser.Models
         {
 
         }
-
-        public AstBase Value { get; set; }
 
         public Identifier AliasName { get; set; }
 

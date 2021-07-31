@@ -2,6 +2,8 @@
 
 namespace Bb.Elastic.SqlParser.Models
 {
+
+    [System.Diagnostics.DebuggerDisplay("{Value}")]
     public class Literal : AstBase
     {
 
